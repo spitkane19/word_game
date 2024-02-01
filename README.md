@@ -1,7 +1,7 @@
 # word_game
 Distributed systems course project by Severi and Eemeli
 
-#Aims of this Project
+# Aims of this Project
 
 1 ) Aim is to create a word multiplayer game where we have a word that needs to be guessed by the player with least amount of guesses. The players race against each other and the winner is the one with the least guesses to get the right word. In case of a tie the player that used the least time to get the right word wins. The game will use a client-server model.
 
