@@ -1,7 +1,7 @@
 import random
 
 
-listofwords = five_letter_words = [
+listofwords = [
     "amber", "baked", "cider", "diary", "eagle", "frost", "gloom", "hotel", "ivory", "joust",
     "knack", "latch", "mango", "nudge", "olive", "prism", "quirk", "relay", "scout", "tramp",
     "unzip", "vowel", "wrist", "yacht", "zebra", "abide", "brave", "chime", "douse", "emote",
