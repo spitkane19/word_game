@@ -7,7 +7,7 @@ listofwords = [
     "unzip", "vowel", "wrist", "yacht", "zebra", "abide", "brave", "chime", "douse", "emote",
     "flute", "grind", "haste", "inlay", "jolly", "koala", "lemon", "magic", "nexus", "oasis",
     "piano", "quack", "rider", "sweep", "token", "unity", "virus", "watch", "xerox", "yield",
-    "zealot", "acorn", "blade", "charm", "drown", "elope", "fable", "grape", "hymen", "igloo",
+    "rusty", "acorn", "blade", "charm", "drown", "elope", "fable", "grape", "hymen", "igloo",
     "jumbo", "kebab", "lunar", "mirth", "nacho", "ocean", "pouch", "quake", "rifle", "savor",
     "tiger", "umbra", "vivid", "wager", "xylon", "yogic", "zappy", "apple", "braid", "cloak",
     "dusky", "elixir", "flint", "gaffe", "hazel", "inert", "jelly", "kiosk", "lucky", "mirth",
@@ -15,22 +15,35 @@ listofwords = [
     "xerox", "yogic", "zesty"]
 
 
-class Singleplayer:
+class SinglePlayer:
     def __init__(self):
         self.correct_word = random.choice(listofwords)
         self.guess_word = [''] * len(self.correct_word)
 
-    def check_guess(self):
-        return ''.join(self.guess_word) == self.correct_word
+    def get_correct_word(self):
+        return self.correct_word
+    
+    def check_guess(self,guess):
+        
+        #self.correct_word = "mikko" #debug
+        if len(guess) != 5:
+            return False
+        return guess == self.correct_word
 
-    def check_letter(self, letter):
+    def check_letter(self, guess): # This checks if there are letters at correct spots
+        if len(guess) != 5:
+            return False, "Word not 5 letters"
         correct_positions = []
         correct_letters = []
-
-        for i, char in enumerate(self.correct_word):
-            if char == letter:
+        
+        #self.correct_word = "mikko" #debug
+        for i, char in enumerate(guess):
+            if char == self.correct_word[i]:  # Correct letter at correct spot
                 correct_letters.append(char)
-                if self.guess_word[i] == char:
-                    correct_positions.append(i)
+                correct_positions.append(i)
+
+        for i, char in enumerate(guess):
+            if char in self.correct_word and i not in correct_positions:  # Correct letter in wrong spot
+                correct_letters.append(char)
 
         return correct_positions, correct_letters
