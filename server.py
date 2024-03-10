@@ -20,13 +20,13 @@ def create_player_state(address):
 
     # Create a new player state
     new_player_state = {
+    "opponent": None,  # Add opponent field
     "correct_letters": [],
     "correct_positions": [],
     "game_status": "ongoing",
     "guessed_correctly": False,
     "guessed_words": [],
     "remaining_attempts": 5,
-    "player_number" : ""
     }
 
     # Add the new player to the game state
@@ -36,7 +36,30 @@ def create_player_state(address):
     with open(game_state_file, 'w') as f:
         yaml.dump(game_state, f)
 
-def handle_client(client_socket, address):
+    return game_state
+
+def compare_results(game_state):
+    for player_id, player_state in game_state["players"].items():
+        if player_state["game_status"] == "ended" and player_state["opponent"]:
+            opponent_id = player_state["opponent"]
+            opponent_state = game_state["players"][opponent_id]
+            if player_state["remaining_attempts"] < opponent_state["remaining_attempts"]:
+                print(f"Player {player_id} wins!")
+            elif player_state["remaining_attempts"] > opponent_state["remaining_attempts"]:
+                print(f"Player {opponent_id} wins!")
+            else:
+                print("It's a tie!")
+
+            # Reset opponent information
+            player_state["opponent"] = None
+            opponent_state["opponent"] = None
+
+    game_state_file = "GameState.yaml"
+    # Write the updated game state back to the file
+    with open(game_state_file, 'w') as f:
+        yaml.dump(game_state, f)
+
+def handle_client(client_socket, address, game_state):
     global multiplayer_counter
     choice_options = "Choose an option:\n1. Singleplayer\n2. Multiplayer\n3. Quit\n"
     client_socket.sendall(choice_options.encode('utf-8'))
@@ -56,7 +79,6 @@ def handle_client(client_socket, address):
                 multiplayer = Multiplayer()
                 # Start a new game
                 clients.append(client_socket)
-
                 multiplayer.start_game(False)
                 text = "Wait"
                 client_socket.sendall(text.encode('utf-8'))
@@ -75,6 +97,11 @@ def handle_client(client_socket, address):
                 print("started game")
                 target_word = multiplayer.get_correct_word()
                 print(target_word)
+                player1_address = clients[-1].getpeername()
+                player2_address = address
+                game_state["players"][f"player_{player1_address[1]}"]["opponent"] = f"player_{player2_address[1]}"
+                game_state["players"][f"player_{player2_address[1]}"]["opponent"] = f"player_{player1_address[1]}"
+
             multiplayer_counter += 1  # Increment counter
             break
         elif choice == "3":  # Quit
@@ -119,7 +146,6 @@ def handle_client(client_socket, address):
             player_state["remaining_attempts"] -= 1
 
             # Update game status
-            player_state["player_number"] = ""
             player_state["guessed_correctly"] = guessed_correctly
             player_state["correct_positions"] = [guess,correct_positions]
             player_state["correct_letters"] = correct_letters
@@ -166,7 +192,6 @@ def handle_client(client_socket, address):
             player_state["remaining_attempts"] -= 1
 
             # Update game status
-            player_state["player_number"] = multiplayer_counter
             player_state["guessed_correctly"] = guessed_correctly
             player_state["correct_positions"] = [guess,correct_positions]
             player_state["correct_letters"] = correct_letters
@@ -176,7 +201,8 @@ def handle_client(client_socket, address):
             # Write the updated game state back to the file
             with open(game_state_file, 'w') as f:
                 yaml.dump(game_state, f)
-                
+            
+            compare_results(game_state)
             client_socket.sendall(yaml.dump(player_state).encode('utf-8'))
 
 def start_server(host, port):
@@ -191,10 +217,10 @@ def start_server(host, port):
             print(f"[*] Accepted connection from {address[0]}:{address[1]}")
 
             # Create player state file
-            create_player_state(address)
+            game_state = create_player_state(address)
 
             # Handle the client's connection
-            client_handler = threading.Thread(target=handle_client, args=(client, address))
+            client_handler = threading.Thread(target=handle_client, args=(client, address,game_state))
             client_handler.start()
     except KeyboardInterrupt:
         print("\n[*] Exiting server...")

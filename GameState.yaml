@@ -295,6 +295,38 @@ players:
     - ''
     player_number: ''
     remaining_attempts: 3
+  player_50718:
+    correct_letters: []
+    correct_positions: []
+    game_status: ongoing
+    guessed_correctly: false
+    guessed_words: []
+    opponent: null
+    remaining_attempts: 5
+  player_50719:
+    correct_letters: []
+    correct_positions: []
+    game_status: ongoing
+    guessed_correctly: false
+    guessed_words: []
+    opponent: null
+    remaining_attempts: 5
+  player_50746:
+    correct_letters: []
+    correct_positions: []
+    game_status: ongoing
+    guessed_correctly: false
+    guessed_words: []
+    opponent: null
+    remaining_attempts: 5
+  player_50747:
+    correct_letters: []
+    correct_positions: []
+    game_status: ongoing
+    guessed_correctly: false
+    guessed_words: []
+    opponent: null
+    remaining_attempts: 5
   player_51859:
     correct_letters:
     - o
