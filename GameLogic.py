@@ -10,7 +10,7 @@ listofwords = [
     "rusty", "acorn", "blade", "charm", "drown", "elope", "fable", "grape", "hymen", "igloo",
     "jumbo", "kebab", "lunar", "mirth", "nacho", "ocean", "pouch", "quake", "rifle", "savor",
     "tiger", "umbra", "vivid", "wager", "xylon", "yogic", "zappy", "apple", "braid", "cloak",
-    "dusky", "elixir", "flint", "gaffe", "hazel", "inert", "jelly", "kiosk", "lucky", "mirth",
+    "dusky", "perse", "flint", "gaffe", "hazel", "inert", "jelly", "kiosk", "lucky", "mirth",
     "nylon", "overt", "plush", "quail", "risky", "sweep", "tulip", "ulcer", "vault", "whale",
     "xerox", "yogic", "zesty"]
 
@@ -44,6 +44,44 @@ class SinglePlayer:
 
         for i, char in enumerate(guess):
             if char in self.correct_word and i not in correct_positions:  # Correct letter in wrong spot
+                correct_letters.append(char)
+
+        return correct_positions, correct_letters
+
+class Multiplayer:
+    def __init__(self):
+        self.correct_word = None
+        self.guess_word = None
+
+    def start_game(self,players):
+        if not players:
+            return False,"Waiting for another player to join..."
+        
+        self.correct_word = random.choice(listofwords)
+        self.guess_word = [''] * len(self.correct_word)
+        return True,"Game started"
+
+    def get_correct_word(self):
+        return self.correct_word
+
+    def check_guess(self, guess):
+        if len(guess) != len(self.correct_word):
+            return False
+        return guess == self.correct_word
+
+    def check_letter(self, guess):
+        if len(guess) != len(self.correct_word):
+            return False, "Word not {} letters".format(len(self.correct_word))
+        correct_positions = []
+        correct_letters = []
+
+        for i, char in enumerate(guess):
+            if char == self.correct_word[i]:
+                correct_letters.append(char)
+                correct_positions.append(i)
+
+        for i, char in enumerate(guess):
+            if char in self.correct_word and i not in correct_positions:
                 correct_letters.append(char)
 
         return correct_positions, correct_letters

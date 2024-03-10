@@ -142,9 +142,9 @@ def draw_word2(guessed_words, square_size, space_between, screen,correct_letters
 
 
 keyboard_layout = [
-['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
-    ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'],
-    ['U', 'V', 'W', 'X', 'Y', 'Z', "<", "Enter"]  # Adjusted for double-width buttons
+['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I','J'],
+    ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R','S', 'T'],
+    ['U', 'V', 'W', 'X', 'Y', 'Z']  # Adjusted for double-width buttons
 ]
 
 # Define the size and spacing of each key
@@ -201,9 +201,11 @@ def single(data):
     # Parse the YAML response
     correct_letters = data["correct_letters"]
     correct_positions = data["correct_positions"]
-    print("Corerct: " + str(correct_positions))
+    print("Correct: " + str(correct_positions))
     game_status = data["game_status"]
     guessed_correctly = data["guessed_correctly"]
+    if guessed_correctly:
+        return "done"
     guessed_words = data["guessed_words"]
     remaining_attempts = data["remaining_attempts"]
 
@@ -258,3 +260,91 @@ def single(data):
     # Quit Pygame
     pygame.quit()
     sys.exit()
+
+def waiting():
+    pygame.display.set_caption("Waiting for another player")
+    pygame.display.flip()
+
+def multi(data):
+    
+    data = yaml.safe_load(data)
+    # Parse the YAML response
+    correct_letters = data["correct_letters"]
+    correct_positions = data["correct_positions"]
+    print("Correct: " + str(correct_positions))
+    game_status = data["game_status"]
+    guessed_correctly = data["guessed_correctly"]
+    if guessed_correctly:
+        start()
+        return "done"
+    guessed_words = data["guessed_words"]
+    remaining_attempts = data["remaining_attempts"]
+
+    # Screen setups
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Singleplayer Wordle")
+
+    clock = pygame.time.Clock()
+    running = True
+
+    # Initialize variables for keyboard and guessed words
+    start_x = 100
+    start_y = 400
+    current_row = 0
+    if guessed_words == None:
+        guessed_words = []
+    while len(guessed_words) < 5:
+        guessed_words.append('     ')
+    draw_word2(guessed_words, 60, 10, screen,correct_letters,correct_positions)
+    draw_keyboard(screen, start_x)
+    pygame.display.flip()
+    # Main game loop
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Handle mouse write clicks
+                mouse_pos = pygame.mouse.get_pos()
+                event.type == pygame.KEYDOWN
+                char = get_clicked_key(mouse_pos, start_x, start_y, key_width, key_height, key_spacing)
+                if char:
+                    print(f"Pressed letter: {char}")
+                    for i in range(len(guessed_words)):
+                        if " " in guessed_words[i]:
+                            word = list(guessed_words[i])
+                            for s in range(len(word)):
+                                if word[s] == " ":
+                                    word[s] = char
+                                    result = "".join(word)
+                                    guessed_words[i]=result
+                                    draw_word2(guessed_words, 60, 10, screen,correct_letters,correct_positions)
+                                    pygame.display.flip()
+                                
+                                    
+                                    break
+                            break
+            elif event.type == pygame.KEYDOWN:
+                for i in range(len(guessed_words)):
+                        if " " in guessed_words[i]:
+                            word = list(guessed_words[i])
+                            s = len(word)
+                            result = word
+                            if event.key == pygame.K_RETURN:
+                                print("here")
+                                if s == 4:
+                                    return result
+                            elif event.key == pygame.K_BACKSPACE:
+                                if len(word)>0:
+                                    word[s-1] = " "
+                                    s-=1
+                            break
+
+
+        #screen.fill(WHITE)
+        clock.tick(FPS)
+
+    # Quit Pygame
+    pygame.quit()
+    sys.exit()
+

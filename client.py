@@ -22,11 +22,42 @@ def start_client(host, port):
                 client.send(message.lower().encode('utf-8'))
                 # Receive response from the server
                 response = client.recv(1024).decode('utf-8')
+                if response == "done":
+                    print("done")
+                    break
+
                 print("Server response:", response)
                 # Get next word
                 message = MainMenu.single(response)
+    elif message == "2":
+        data = 'correct_letters: []\ncorrect_positions: []\ngame_status: ongoing\nguessed_correctly: false\nguessed_words:\n \nremaining_attempts: 4\n '
+
+        response = client.recv(1024).decode('utf-8')
+        print(response)
+        if response == "Wait":
+            MainMenu.waiting()
+
+        # Keep checking for "Ready" in a loop
+            while True:
+                response = client.recv(1024).decode('utf-8')
+                print(response)
+
+                if response == "Ready":
+                    print("Ready received. Exiting loop.")
+                    break
+
+                time.sleep(1)
+        message = (MainMenu.multi(data))
+        while True:           
+            print("Loopink")
+            client.send(message.lower().encode('utf-8'))
+            response = client.recv(1024).decode('utf-8')
+            print("Server response:", response)
+            if message == "done":
+                print('done')
+            message = (MainMenu.multi(data))
 
 if __name__ == "__main__":
-    SERVER_HOST = "127.0.0.1"  # Server IP address
+    SERVER_HOST = "192.168.1.102"  # Server IP address
     SERVER_PORT = 9999          # Server port
     start_client(SERVER_HOST, SERVER_PORT)

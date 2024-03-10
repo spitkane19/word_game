@@ -1,2 +1,1 @@
-    # Main game loop
-    while running:
+192.168.1.102
