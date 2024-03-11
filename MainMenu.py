@@ -288,7 +288,8 @@ def waiting():
     pygame.display.flip()
 
 def multi(data):
-    
+    global current_row
+    waiting_for_enter = False
     data = yaml.safe_load(data)
     # Parse the YAML response
     correct_letters = data["correct_letters"]
@@ -304,7 +305,7 @@ def multi(data):
 
     # Screen setups
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Singleplayer Wordle")
+    pygame.display.set_caption("Multiplayer Wordle")
 
     clock = pygame.time.Clock()
     running = True
@@ -312,7 +313,6 @@ def multi(data):
     # Initialize variables for keyboard and guessed words
     start_x = 100
     start_y = 400
-    current_row = 0
     if guessed_words == None:
         guessed_words = []
     while len(guessed_words) < 5:
@@ -325,7 +325,7 @@ def multi(data):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN and not waiting_for_enter:
                 # Handle mouse write clicks
                 mouse_pos = pygame.mouse.get_pos()
                 event.type == pygame.KEYDOWN
@@ -342,25 +342,30 @@ def multi(data):
                                     guessed_words[i]=result
                                     draw_word2(guessed_words, 60, 10, screen,correct_letters,correct_positions)
                                     pygame.display.flip()
-                                
+                                    if s == 4:
+                                        waiting_for_enter = True
                                     
                                     break
                             break
-            elif event.type == pygame.KEYDOWN:
-                for i in range(len(guessed_words)):
-                        if " " in guessed_words[i]:
-                            word = list(guessed_words[i])
-                            s = len(word)
-                            result = word
-                            if event.key == pygame.K_RETURN:
-                                print("here")
-                                if s == 4:
-                                    return result
-                            elif event.key == pygame.K_BACKSPACE:
-                                if len(word)>0:
-                                    word[s-1] = " "
-                                    s-=1
-                            break
+            elif event.type == pygame.KEYDOWN and waiting_for_enter:
+                for i in range(current_row, len(guessed_words)):
+                    word = list(guessed_words[i])
+                    s = len(word)
+                    result = "".join(word)
+                    print(word)
+                    if event.key == pygame.K_RETURN:
+                        print("here")
+                        if s == 5:
+                            current_row += 1
+                            print(current_row)
+                            waiting_for_enter = False
+                            return result  # Reset the flag to wait for Enter again
+                    elif event.key == pygame.K_BACKSPACE:
+                        waiting_for_enter = False
+                        if len(word) > 0:
+                            word[s - 1] = " "
+                            s -= 1
+                    break
 
 
         #screen.fill(WHITE)
