@@ -227,6 +227,6 @@ def start_server(host, port):
         server.close()
 
 if __name__ == "__main__":
-    HOST = "192.168.1.102"  # Listen on all interfaces
+    HOST = "192.168.1.101"  # Listen on all interfaces
     PORT = 9999       # Choose an appropriate port
     start_server(HOST, PORT)

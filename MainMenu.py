@@ -3,6 +3,7 @@ import sys
 from GameLogic import SinglePlayer, listofwords
 import time
 import yaml
+from client import current_row
 
 pygame.init()
 pygame.font.init()
@@ -44,6 +45,7 @@ def draw_word(word, start_y,screen):
 
 def start():
     # Screen setups
+    current_row = 0
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Main Menu")
 
@@ -196,7 +198,7 @@ def get_clicked_key(mouse_pos, start_x, start_y, key_width, key_height, key_spac
     return char
 
 def single(data):
-    
+    global current_row
     data = yaml.safe_load(data)
     # Parse the YAML response
     correct_letters = data["correct_letters"]
@@ -219,41 +221,61 @@ def single(data):
     # Initialize variables for keyboard and guessed words
     start_x = 100
     start_y = 400
-    current_row = 0
+    waiting_for_enter = False  # Flag to control when to allow writing to the next row
+
     if guessed_words == None:
         guessed_words = []
     while len(guessed_words) < 5:
         guessed_words.append('     ')
-    draw_word2(guessed_words, 60, 10, screen,correct_letters,correct_positions)
+    draw_word2(guessed_words, 60, 10, screen, correct_letters, correct_positions)
     draw_keyboard(screen, start_x)
     pygame.display.flip()
+
     # Main game loop
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                # Handle mouse write clicks
+            elif event.type == pygame.MOUSEBUTTONDOWN and not waiting_for_enter:
                 mouse_pos = pygame.mouse.get_pos()
                 char = get_clicked_key(mouse_pos, start_x, start_y, key_width, key_height, key_spacing)
                 if char:
                     print(f"Pressed letter: {char}")
-                    for i in range(len(guessed_words)):
+                    for i in range(current_row, len(guessed_words)):
                         if " " in guessed_words[i]:
                             word = list(guessed_words[i])
                             for s in range(len(word)):
                                 if word[s] == " ":
                                     word[s] = char
+                                    print(word)
                                     result = "".join(word)
-                                    guessed_words[i]=result
-                                    draw_word2(guessed_words, 60, 10, screen,correct_letters,correct_positions)
+                                    guessed_words[i] = result
+                                    draw_word2(guessed_words, 60, 10, screen, correct_letters, correct_positions)
                                     pygame.display.flip()
                                     if s == 4:
-                                        return result
+                                        waiting_for_enter = True
+
                                     break
                             break
-
-
+            elif event.type == pygame.KEYDOWN and waiting_for_enter:
+                for i in range(current_row, len(guessed_words)):
+                    word = list(guessed_words[i])
+                    s = len(word)
+                    result = "".join(word)
+                    print(word)
+                    if event.key == pygame.K_RETURN:
+                        print("here")
+                        if s == 5:
+                            current_row += 1
+                            print(current_row)
+                            waiting_for_enter = False
+                            return result  # Reset the flag to wait for Enter again
+                    elif event.key == pygame.K_BACKSPACE:
+                        waiting_for_enter = False
+                        if len(word) > 0:
+                            word[s - 1] = " "
+                            s -= 1
+                    break
         #screen.fill(WHITE)
         clock.tick(FPS)
 

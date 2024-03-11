@@ -2,6 +2,8 @@ import socket
 import MainMenu
 from GameLogic import SinglePlayer
 import time
+global current_row
+current_row = 0
 def start_client(host, port):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -15,6 +17,7 @@ def start_client(host, port):
     # Send the message to the server
     client.send(message.encode('utf-8'))
     data = 'correct_letters: []\ncorrect_positions: []\ngame_status: ongoing\nguessed_correctly: false\nguessed_words:\n \nremaining_attempts: 4\n'
+    current_row = 0
     if message == "1": # if singleplayer
         message = (MainMenu.single(data))
         while True:
@@ -58,6 +61,6 @@ def start_client(host, port):
             message = (MainMenu.multi(data))
 
 if __name__ == "__main__":
-    SERVER_HOST = "192.168.1.102"  # Server IP address
+    SERVER_HOST = "192.168.1.101"  # Server IP address
     SERVER_PORT = 9999          # Server port
     start_client(SERVER_HOST, SERVER_PORT)
