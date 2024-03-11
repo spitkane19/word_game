@@ -121,7 +121,7 @@ def start():
     pygame.quit()
     sys.exit()
 
-def draw_word2(guessed_words, square_size, space_between, screen,correct_letters,correct_positions):
+def draw_word2(guessed_words, square_size, space_between, screen, correct_letters, correct_positions):
     # Calculate the starting y-coordinate to ensure alignment in the middle
     start_y = 10
 
@@ -134,7 +134,15 @@ def draw_word2(guessed_words, square_size, space_between, screen,correct_letters
 
         for j, letter in enumerate(word):
             rect = pygame.Rect(start_x + j * (square_size + space_between), start_y + i * (square_size + space_between), square_size, square_size)
-            pygame.draw.rect(screen, (169, 169, 169), rect, border_radius=5)
+
+            # Determine the color based on correct positions and letters
+            if letter in correct_letters:
+                pygame.draw.rect(screen, YELLOW, rect, border_radius=5)
+            elif letter in correct_positions:
+                pygame.draw.rect(screen, GREEN, rect, border_radius=5)
+            else:
+                pygame.draw.rect(screen, GRAY, rect, border_radius=5)
+
             font = pygame.font.Font(None, 36)
             text = font.render(letter, True, (0, 0, 0))
             text_rect = text.get_rect(center=rect.center)
@@ -203,6 +211,7 @@ def single(data):
     # Parse the YAML response
     correct_letters = data["correct_letters"]
     correct_positions = data["correct_positions"]
+    print(correct_positions)
     print("Correct: " + str(correct_positions))
     game_status = data["game_status"]
     guessed_correctly = data["guessed_correctly"]
@@ -360,6 +369,7 @@ def multi(data):
                             print(current_row)
                             waiting_for_enter = False
                             return result  # Reset the flag to wait for Enter again
+                            print(result)
                     elif event.key == pygame.K_BACKSPACE:
                         waiting_for_enter = False
                         if len(word) > 0:
