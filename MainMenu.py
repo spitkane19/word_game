@@ -341,7 +341,6 @@ def multi(data):
                             s -= 1
                     break
 
-
         #screen.fill(WHITE)
         clock.tick(FPS)
 

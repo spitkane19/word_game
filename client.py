@@ -55,6 +55,12 @@ def start_client(host, port):
             print("Loopink")
             client.send(message.lower().encode('utf-8'))
             response = client.recv(1024).decode('utf-8')
+            if response == "finish":
+                response = client.recv(1024).decode('utf-8')
+                if response == 1:
+                    print("It's a tie")
+                else:
+                    print("Winner is : " + str(response))
             print("Server response:", response)
             if message == "done":
                 print('done')
