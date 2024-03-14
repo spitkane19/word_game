@@ -61,6 +61,6 @@ def start_client(host, port):
             message = (MainMenu.multi(data))
 
 if __name__ == "__main__":
-    SERVER_HOST = "192.168.1.101"  # Server IP address
+    SERVER_HOST = "192.168.1.102"  # Server IP address
     SERVER_PORT = 9999          # Server port
     start_client(SERVER_HOST, SERVER_PORT)

@@ -75,39 +75,6 @@ def start():
                         
                         elif button.text == "Multiplayer":
                             return 2
-                            
-                            """ # Create an instance of Singleplayer
-                            while True:
-                                for event in pygame.event.get():
-                                    if event.type == pygame.QUIT:
-                                        pygame.quit()
-                                        sys.exit()
-                                    elif event.type == pygame.KEYDOWN:
-                                        if event.key == pygame.K_RETURN:
-                                            if singleplayer.check_guess():
-                                                print("You are correct!")
-                                                # Handle game over logic, e.g., return to the main menu
-                                                break
-                                            else:
-                                                letter = singleplayer.guess_word[0]
-                                                correct_positions, correct_letters = singleplayer.check_letter(letter)
-
-                                                # Drawing logic for the word
-                                                draw_word(singleplayer.correct_word, SCREEN_HEIGHT // 2 - BUTTON_HEIGHT // 2, screen)
-                                                
-                                                # Drawing logic for the guessed word
-                                                draw_word(singleplayer.guess_word, SCREEN_HEIGHT // 2 + BUTTON_HEIGHT, screen)
-
-                                                # Drawing logic for correct positions and letters
-                                                for i, pos in enumerate(correct_positions):
-                                                    rect = pygame.Rect(pos * BUTTON_WIDTH, SCREEN_HEIGHT // 2 - BUTTON_HEIGHT // 2, BUTTON_WIDTH, BUTTON_HEIGHT)
-                                                    pygame.draw.rect(screen, YELLOW, rect, border_radius=10)
-
-                                                for i, letter in enumerate(correct_letters):
-                                                    rect = pygame.Rect(i * BUTTON_WIDTH, SCREEN_HEIGHT // 2 - BUTTON_HEIGHT // 2, BUTTON_WIDTH, BUTTON_HEIGHT)
-                                                    pygame.draw.rect(screen, GREEN, rect, border_radius=10)
-
-                                # Your drawing code here (replace with your Pygame drawing logic) """
 
         screen.fill(WHITE)
 
@@ -147,9 +114,6 @@ def draw_word2(guessed_words, square_size, space_between, screen, correct_letter
             text = font.render(letter, True, (0, 0, 0))
             text_rect = text.get_rect(center=rect.center)
             screen.blit(text, text_rect)
-
-
-
 
 keyboard_layout = [
 ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I','J'],
@@ -384,4 +348,3 @@ def multi(data):
     # Quit Pygame
     pygame.quit()
     sys.exit()
-

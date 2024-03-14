@@ -5,10 +5,10 @@ import os
 from GameLogic import SinglePlayer,Multiplayer
 multiplayer_counter = 0
 clients = []
+enemy = None
+game_state_file = "GameState.yaml"
 def create_player_state(address):
     # Path to the GameState.yaml file
-    game_state_file = "GameState.yaml"
-
     if not os.path.exists(game_state_file):
         # If the file doesn't exist, create it with an empty players dictionary
         with open(game_state_file, 'w') as f:
@@ -28,7 +28,8 @@ def create_player_state(address):
     "guessed_words": [],
     "remaining_attempts": 5,
     }
-
+    print(game_state)
+    print(address)
     # Add the new player to the game state
     game_state["players"][f"player_{address[1]}"] = new_player_state
 
@@ -39,27 +40,32 @@ def create_player_state(address):
     return game_state
 
 def compare_results(game_state):
+    global enemy
+    print("Compare results enemy: " + enemy)
     for player_id, player_state in game_state["players"].items():
-        if player_state["game_status"] == "ended" and player_state["opponent"]:
-            opponent_id = player_state["opponent"]
-            opponent_state = game_state["players"][opponent_id]
-            if player_state["remaining_attempts"] < opponent_state["remaining_attempts"]:
-                print(f"Player {player_id} wins!")
-            elif player_state["remaining_attempts"] > opponent_state["remaining_attempts"]:
-                print(f"Player {opponent_id} wins!")
-            else:
-                print("It's a tie!")
+        try:
+            if player_state["game_status"] == "ended" and player_state["opponent"]:
+                opponent_id = player_state["opponent"]
+                opponent_state = game_state["players"][opponent_id]
+                if player_state["remaining_attempts"] < opponent_state["remaining_attempts"]:
+                    print(f"Player {player_id} wins!")
+                elif player_state["remaining_attempts"] > opponent_state["remaining_attempts"]:
+                    print(f"Player {opponent_id} wins!")
+                else:
+                    print("It's a tie!")
 
-            # Reset opponent information
-            player_state["opponent"] = None
-            opponent_state["opponent"] = None
+                # Reset opponent information
+                player_state["opponent"] = None
+                opponent_state["opponent"] = None
+        except KeyError:
+            print("No opponent yet")
 
-    game_state_file = "GameState.yaml"
     # Write the updated game state back to the file
     with open(game_state_file, 'w') as f:
         yaml.dump(game_state, f)
 
 def handle_client(client_socket, address, game_state):
+    global enemy
     global multiplayer_counter
     choice_options = "Choose an option:\n1. Singleplayer\n2. Multiplayer\n3. Quit\n"
     client_socket.sendall(choice_options.encode('utf-8'))
@@ -90,18 +96,24 @@ def handle_client(client_socket, address, game_state):
                 clients.append(client_socket)
                 print("second player here")
                 text = "Ready"
-                print("Ass")
                 for client in clients:
                     client.sendall(text.encode('utf-8'))
                 multiplayer.start_game(True)
                 print("started game")
                 target_word = multiplayer.get_correct_word()
                 print(target_word)
-                player1_address = clients[-1].getpeername()
+                player1_address = clients[0].getpeername()
+                print(player1_address)
                 player2_address = address
+                print(player2_address)
+                print(game_state)
                 game_state["players"][f"player_{player1_address[1]}"]["opponent"] = f"player_{player2_address[1]}"
                 game_state["players"][f"player_{player2_address[1]}"]["opponent"] = f"player_{player1_address[1]}"
-
+                enemy = game_state["players"][f"player_{player1_address[1]}"]["opponent"]
+                print(game_state["players"][f"player_{player1_address[1]}"])
+                print(game_state["players"][f"player_{player2_address[1]}"])
+                with open("GameState.yaml", 'w') as f:
+                    yaml.dump(game_state, f)
             multiplayer_counter += 1  # Increment counter
             break
         elif choice == "3":  # Quit
@@ -111,7 +123,7 @@ def handle_client(client_socket, address, game_state):
             # Invalid choice, send error message to client
             error_message = "Invalid choice. Please choose again."
             client_socket.sendall(error_message.encode('utf-8'))
-    
+
     if choice == "1":
         # Load the game state
         game_state_file = "GameState.yaml"
@@ -202,7 +214,6 @@ def handle_client(client_socket, address, game_state):
             with open(game_state_file, 'w') as f:
                 yaml.dump(game_state, f)
             
-            compare_results(game_state)
             client_socket.sendall(yaml.dump(player_state).encode('utf-8'))
 
 def start_server(host, port):
@@ -227,6 +238,6 @@ def start_server(host, port):
         server.close()
 
 if __name__ == "__main__":
-    HOST = "192.168.1.101"  # Listen on all interfaces
+    HOST = "192.168.1.102"  # Listen on all interfaces
     PORT = 9999       # Choose an appropriate port
     start_server(HOST, PORT)
