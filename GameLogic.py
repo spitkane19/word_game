@@ -31,8 +31,7 @@ class SinglePlayer:
         return guess == self.correct_word
 
     def check_letter(self, guess): # This checks if there are letters at correct spots
-        if len(guess) != 5:
-            return False, "Word not 5 letters"
+
         correct_positions = []
         correct_letters = []
         
@@ -70,8 +69,6 @@ class Multiplayer:
         return guess == self.correct_word
 
     def check_letter(self, guess):
-        if len(guess) != len(self.correct_word):
-            return False, "Word not {} letters".format(len(self.correct_word))
         correct_positions = []
         correct_letters = []
 

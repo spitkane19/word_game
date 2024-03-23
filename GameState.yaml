@@ -1,82 +1,15 @@
 players:
+  192.168.1.102:
+    correct_letters: []
+    correct_positions:
+    - '4'
+    - []
+    game_status: ended
+    guessed_correctly: false
+    guessed_words:
+    - mikko
+    - '4'
+    nickname: asd
+    opponent: null
+    remaining_attempts: 0
   player_00000: null
-  player_50235:
-    correct_letters: []
-    correct_positions: []
-    game_status: ongoing
-    guessed_correctly: false
-    guessed_words: []
-    opponent: null
-    remaining_attempts: 5
-  player_50236:
-    correct_letters: []
-    correct_positions: []
-    game_status: ongoing
-    guessed_correctly: false
-    guessed_words: []
-    opponent: null
-    remaining_attempts: 5
-  player_50242:
-    correct_letters: []
-    correct_positions: []
-    game_status: ongoing
-    guessed_correctly: false
-    guessed_words: []
-    opponent: null
-    remaining_attempts: 5
-  player_50243:
-    correct_letters: []
-    correct_positions: []
-    game_status: ongoing
-    guessed_correctly: false
-    guessed_words: []
-    opponent: player_50244
-    remaining_attempts: 5
-  player_50244:
-    correct_letters: []
-    correct_positions: []
-    game_status: ongoing
-    guessed_correctly: false
-    guessed_words: []
-    opponent: player_50243
-    remaining_attempts: 5
-  player_50245:
-    correct_letters: []
-    correct_positions: []
-    game_status: ongoing
-    guessed_correctly: false
-    guessed_words: []
-    opponent: null
-    remaining_attempts: 5
-  player_50246:
-    correct_letters: []
-    correct_positions: []
-    game_status: ongoing
-    guessed_correctly: false
-    guessed_words: []
-    opponent: player_50247
-    remaining_attempts: 5
-  player_50247:
-    correct_letters: []
-    correct_positions: []
-    game_status: ongoing
-    guessed_correctly: false
-    guessed_words: []
-    opponent: player_50246
-    remaining_attempts: 5
-  player_50271:
-    correct_letters: []
-    correct_positions: []
-    game_status: ongoing
-    guessed_correctly: false
-    guessed_words: []
-    opponent: null
-    remaining_attempts: 5
-  player_50272:
-    correct_letters: []
-    correct_positions: []
-    game_status: ongoing
-    guessed_correctly: false
-    guessed_words: []
-    opponent: null
-    remaining_attempts: 5

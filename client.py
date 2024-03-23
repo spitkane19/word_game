@@ -4,24 +4,29 @@ from GameLogic import SinglePlayer
 import time
 global current_row
 current_row = 0
+
 def start_client(host, port):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     client.connect((host, port))
 
     response = client.recv(1024).decode('utf-8')
-    print(response)
 
-    message = str(MainMenu.start())
-    
+    message= str(MainMenu.start())
+    message_tuple = eval(message)
+    print("message= " + str(message_tuple[0]))
+    print("name= " + str(message_tuple[1]))
     # Send the message to the server
     client.send(message.encode('utf-8'))
-    data = 'correct_letters: []\ncorrect_positions: []\ngame_status: ongoing\nguessed_correctly: false\nguessed_words:\n \nremaining_attempts: 4\n'
+    message = str(message_tuple[0])
+    #data = 'correct_letters: []\ncorrect_positions: []\ngame_status: ongoing\nguessed_correctly: false\nguessed_words:\n \nremaining_attempts: 4\n'
     current_row = 0
     if message == "1": # if singleplayer
-        message = (MainMenu.single(data))
+        response = client.recv(1024).decode('utf-8')
+        message = str(MainMenu.single(response))
         while True:
                 # Send the message to the server
+                print("viesti: " + message)
                 client.send(message.lower().encode('utf-8'))
                 # Receive response from the server
                 response = client.recv(1024).decode('utf-8')
@@ -65,6 +70,24 @@ def start_client(host, port):
             if message == "done":
                 print('done')
             message = (MainMenu.multi(data))
+    elif message == "4":
+        client.send(message.lower().encode('utf-8'))
+        print("ass")   
+        response = client.recv(1024).decode('utf-8')
+        message = str(MainMenu.single(response))
+        while True:
+            # Send the message to the server
+            print("viesti: " + message)
+            client.send(message.lower().encode('utf-8'))
+            # Receive response from the server
+            response = client.recv(1024).decode('utf-8')
+            if response == "done":
+                print("done")
+                break
+
+            print("Server response:", response)
+            # Get next word
+            message = MainMenu.single(response)
 
 if __name__ == "__main__":
     SERVER_HOST = "192.168.1.102"  # Server IP address

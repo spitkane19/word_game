@@ -10,10 +10,12 @@ pygame.font.init()
 
 # All the basic constants
 SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_HEIGHT = 650
 BUTTON_WIDTH = 400
 BUTTON_HEIGHT = 100
-BUTTON_MARGIN = 60
+BUTTON_MARGIN = 40
+TEXTBOX_WIDTH = 200
+TEXTBOX_HEIGHT = 35
 FPS = 60
 
 WHITE = (251, 252, 248)
@@ -34,6 +36,34 @@ class Button:
         text_rect = text.get_rect(center=self.rect.center)
         screen.blit(text, text_rect)
 
+class TextBox:
+    def __init__(self, x, y, width, height):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = ""
+        self.font = pygame.font.Font(None, 36)
+        self.active = False
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                self.active = not self.active
+            else:
+                self.active = False
+        if event.type == pygame.KEYDOWN:
+            if self.active:
+                if event.key == pygame.K_RETURN:
+                    self.active = False
+                elif event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                else:
+                    self.text += event.unicode
+
+    def draw(self, screen):
+        color = BLACK if self.active else GRAY
+        pygame.draw.rect(screen, color, self.rect, 2)
+        text_surface = self.font.render(self.text, True, BLACK)
+        screen.blit(text_surface, (self.rect.x + 5, self.rect.y + 5))
+
 def draw_word(word, start_y,screen):
     for i, letter in enumerate(word):
         rect = pygame.Rect(i * BUTTON_WIDTH, start_y, BUTTON_WIDTH, BUTTON_HEIGHT)
@@ -43,43 +73,69 @@ def draw_word(word, start_y,screen):
         text_rect = text.get_rect(center=rect.center)
         screen.blit(text, text_rect)
 
+def write_name():
+    user_text = ""
+    return user_text
+
 def start():
     # Screen setups
-    current_row = 0
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Main Menu")
 
     # Jenson Buttons
-    multiplayer_button = Button("Multiplayer", BUTTON_MARGIN)
-    singleplayer_button = Button("Singleplayer", BUTTON_MARGIN + BUTTON_HEIGHT + BUTTON_MARGIN)
-    exit_button = Button("Exit", BUTTON_MARGIN + (BUTTON_HEIGHT + BUTTON_MARGIN) * 2)
+    text_box = TextBox((SCREEN_WIDTH - TEXTBOX_WIDTH) // 2, 40, TEXTBOX_WIDTH, TEXTBOX_HEIGHT)
+    multiplayer_button = Button("Multiplayer", BUTTON_MARGIN + 40)
+    singleplayer_button = Button("Singleplayer", BUTTON_MARGIN + BUTTON_HEIGHT + BUTTON_MARGIN + 40)
+    exit_button = Button("Exit", BUTTON_MARGIN + (BUTTON_HEIGHT + BUTTON_MARGIN) * 2 + 40)
+    reconnect_button = Button("Reconnect", BUTTON_MARGIN + (BUTTON_HEIGHT + BUTTON_MARGIN) * 3 + 40)
 
-    buttons = [multiplayer_button, singleplayer_button, exit_button]
+    buttons = [multiplayer_button, singleplayer_button, exit_button, reconnect_button]
 
     clock = pygame.time.Clock()
     running = True
 
     while running:
+        # Check if the text box is empty
+        text_empty = len(text_box.text.strip()) == 0
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                for button in buttons:
-                    if button.rect.collidepoint(pygame.mouse.get_pos()):
-                        # This is what happens if Exit button is pressed
-                        if button.text == "Exit":
-                            running = False
-                        # Singleplayer makes a new game
-                        elif button.text == "Singleplayer":
-                            return 1
-                        
-                        elif button.text == "Multiplayer":
-                            return 2
+                if not text_empty:
+                    for button in buttons:
+                        if button.rect.collidepoint(pygame.mouse.get_pos()):
+                            # This is what happens if Exit button is pressed
+                            if button.text == "Exit":
+                                running = False
+                            # Singleplayer makes a new game
+                            elif button.text == "Singleplayer":
+                                name = text_box.text.strip()
+                                return 1, name
+                            elif button.text == "Multiplayer":
+                                name = text_box.text.strip()
+                                return 2, name
+                            elif button.text == "Reconnect":
+                                name = text_box.text.strip()
+                                return 4, name
+                                                                                #TODO tee serverin puolelle handlaus nimelle ja gamestaten pelaajien nimet pitää olla ip osoite + nimimerkki
+            # Handle events for the text box
+            text_box.handle_event(event)
 
         screen.fill(WHITE)
 
+        # Draw the "First write your name" text
+        font = pygame.font.Font(None, 36)
+        text_surface = font.render("First write your name", True, BLACK)
+        text_rect = text_surface.get_rect(center=(SCREEN_WIDTH // 2, 20))
+        screen.blit(text_surface, text_rect)
+
+        # Draw buttons
         for button in buttons:
             button.draw(screen)
+
+        # Draw the text box
+        text_box.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -87,6 +143,8 @@ def start():
     # Quit Pygame
     pygame.quit()
     sys.exit()
+
+
 
 def draw_word2(guessed_words, square_size, space_between, screen, correct_letters, correct_positions):
     # Calculate the starting y-coordinate to ensure alignment in the middle
@@ -171,8 +229,10 @@ def get_clicked_key(mouse_pos, start_x, start_y, key_width, key_height, key_spac
 
 def single(data):
     global current_row
+    print("Data before loading YAML:", data)
     data = yaml.safe_load(data)
     # Parse the YAML response
+    print(type(data))
     correct_letters = data["correct_letters"]
     correct_positions = data["correct_positions"]
     print(correct_positions)
