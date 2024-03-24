@@ -1,6 +1,5 @@
 import random
 
-
 listofwords = [
     "AMBER", "BAKED", "CIDER", "DIARY", "EAGLE", "FROST", "GLOOM", "HOTEL", "IVORY", "JOUST",
     "KNACK", "LATCH", "MANGO", "NUDGE", "OLIVE", "PRISM", "QUIRK", "RELAY", "SCOUT", "TRAMP",
@@ -15,8 +14,6 @@ listofwords = [
     "XEROX", "YOGIC", "ZESTY"
 ]
 
-
-
 class Game:
     def __init__(self):
         self.correct_word = random.choice(listofwords)
@@ -28,6 +25,7 @@ class Game:
     
     def check_letter(self, guess):
     # This checks if there are letters at correct spots
+
         correct_positions = []
         correct_letters = []
         
@@ -40,8 +38,7 @@ class Game:
         for i, char in enumerate(guess):
             if char in self.correct_word and i not in correct_positions:  
                 correct_letters.append(char)
-
-        return correct_positions, correct_letters
+        return str(correct_positions), correct_letters
     
     def did_you_win(self, guess):
         if guess == self.correct_word:

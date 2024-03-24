@@ -1,9 +1,12 @@
 players:
-  player_52937:
+  097bddc0-409c-4a62-99db-61969f9be69f:
     correct_letters: []
     correct_positions: []
+    correct_word: ''
     game_status: ongoing
     guessed_correctly: false
     guessed_words: []
-    opponent: null
+    ip_address: 192.168.1.102
+    nickname: None
     remaining_attempts: 5
+
