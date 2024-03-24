@@ -1,0 +1,9 @@
+players:
+  player_52937:
+    correct_letters: []
+    correct_positions: []
+    game_status: ongoing
+    guessed_correctly: false
+    guessed_words: []
+    opponent: null
+    remaining_attempts: 5
