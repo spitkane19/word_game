@@ -55,8 +55,7 @@ def create_player_state(address):
     "guessed_words": [],
     "remaining_attempts": 5,
     }
-    print(game_state)
-    print(address)
+    
     # Add the new player to the game state
     game_state["players"][f"player_{address[1]}"] = new_player_state
 
@@ -67,6 +66,7 @@ def create_player_state(address):
     return game_state
 
 def handle_client(client_socket, address, game):
+    global gamer_list
     word = game.get_correct_word()
     playing = 1
     index = gamer_list.index((client_socket, address))
@@ -127,7 +127,7 @@ def handle_client(client_socket, address, game):
                     message_json = json.dumps(message)
                     client_socket.sendall(message_json.encode('utf-8'))
                 time.sleep(5)
-                client_socket.close()
+                disconnect(client_socket, address)
                 break
                 # Release the lock after sending messages
                 
@@ -142,8 +142,18 @@ def handle_client(client_socket, address, game):
             break
 
     client_socket.close()
+def disconnect(client, address):
+    global gamer_list
+    for i, (client_socket, addr) in enumerate(gamer_list):
+        if client_socket == client and addr == address:
+            # Close the client socket
+            client_socket.close()
+            # Remove the client from the gamer_list
+            del gamer_list[i]
+            break
 
 def add_player(client_socket, address):
+    global gamer_list
     gamer_list.append((client_socket,address))
     if len(gamer_list) == 1:
         text = "Wait"
@@ -181,6 +191,7 @@ def start_server(host, port):
             game_state = create_player_state(address)
             text = "Hello, you have connected to the server!"
             client.sendall(text.encode('utf-8'))
+            name = client.recv(1024).decode('utf-8')
 
             # Handle the client's connection
             client_handler = threading.Thread(target=add_player, args=(client, address))

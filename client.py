@@ -484,8 +484,11 @@ def ConnectionScreen():
     # Text inputs
     ip_text = "192.168.1.101"
     port_text = "9999"
+    name_text = "Username"
+
 
     # Text boxes
+    name_box = TextBox(screen, 250, 75, 200, 50, fontSize=30, placeholderText=name_text, textColour = BLACK)
     ip_box = TextBox(screen, 250, 175, 200, 50, fontSize=30, placeholderText=ip_text, textColour = BLACK)
     port_box = TextBox(screen, 250, 275, 200, 50, fontSize=30, placeholderText=port_text, textColour = BLACK)
 
@@ -512,28 +515,36 @@ def ConnectionScreen():
                         ip_text = "192.168.1.101"
                     if port_text == "":
                         port_text = "9999"
+                    if name_text == "":
+                        name_text = "Username"
                     
-                    return start_client(ip_text, int(port_text))
+                    return start_client(ip_text, int(port_text), name_text)
         
 
         pygame_widgets.update(events)
         # Update text in text boxes
         ip_text = ip_box.getText()
         port_text = port_box.getText()
+        name_text = name_box.getText()
         # Draw everything on the screen
         screen.fill(WHITE)
         font = pygame.font.Font(None, 36)
         text = font.render("Connect to a Server", True, BLACK)
-        text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, 100))
+        text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, 25))
         ip_label = font.render("IP:", True, BLACK)
+        name_lable = font.render("Username: ", True, BLACK)
         screen.blit(ip_label, (130, 175 + ip_box._height // 2 - ip_label.get_height() // 2))
         port_label = font.render("Port:", True, BLACK)
         screen.blit(port_label, (125, 275 + port_box._height // 2 - port_label.get_height() // 2))
+        screen.blit(name_lable, (130, 75 + name_box._height // 2 - name_lable.get_height() // 2))
+
         screen.blit(text, text_rect)
         back_button.draw(screen)
         connect_button.draw(screen)
+    
         ip_box.draw()
         port_box.draw()
+        name_box.draw()
         pygame.display.flip()
         clock.tick(FPS)
 
@@ -559,7 +570,7 @@ def you_won(word, state):
     
     start()
 
-def start_client(host, port):
+def start_client(host, port, name):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
@@ -568,6 +579,8 @@ def start_client(host, port):
         start()
 
     response = client.recv(1024).decode('utf-8')
+    print(response)
+    client.sendall(name.encode('utf-8'))
     waiting(client)
     
     
