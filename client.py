@@ -6,6 +6,7 @@ import yaml
 from pygame_widgets.textbox import TextBox
 import pygame_widgets
 import socket
+import json
 
 
 pygame.init()
@@ -94,45 +95,45 @@ def start():
     pygame.quit()
     sys.exit()
 
-def draw_word2(guessed_words, square_size, space_between, screen, game, row, multi=False, cr_pos = [], cr_let = []):
+def draw_word2(guessed_words, square_size, space_between, screen, row,game=None, multi=False, cr_pos = [], cr_let = [], paint=False):
     # Calculate the starting y-coordinate to ensure alignment in the middle
     
     start_y = 10
     if multi:
-        for i, word in enumerate(guessed_words):
-            # Calculate the total width of the current word
-            word_width = len(word) * (square_size + space_between)
-            # Calculate the starting x-coordinate to ensure alignment in the middle
-            start_x = (SCREEN_WIDTH - word_width) // 2
-            result = "".join(word)
-            if len(result.replace(" ", "")) != 5:
-                correct_positions, correct_letters = [], []
-            else:
-                correct_positions, correct_letters = cr_pos, cr_let
+        word = guessed_words[row]
+        # Calculate the total width of the current word
+        word_width = len(word) * (square_size + space_between)
+        # Calculate the starting x-coordinate to ensure alignment in the middle
+        start_x = (SCREEN_WIDTH - word_width) // 2
+        result = "".join(word)
+        if len(result.replace(" ", "")) != 5:
+            correct_positions, correct_letters = [], []
+        else:
+            correct_positions, correct_letters = cr_pos, cr_let
 
-            for j, letter in enumerate(word):
-                rect = pygame.Rect(start_x + j * (square_size + space_between), start_y + i * (square_size + space_between), square_size, square_size)
+        for j, letter in enumerate(word):
+            rect = pygame.Rect(start_x + j * (square_size + space_between), start_y + row * (square_size + space_between), square_size, square_size)
 
-                # Determine the color based on correct positions and letters
-                if i != row:
-                    if j in correct_positions:
-                        pygame.draw.rect(screen, GREEN, rect, border_radius=5)
+            # Determine the color based on correct positions and letters
+            if paint:
+                if j in correct_positions:
+                    pygame.draw.rect(screen, GREEN, rect, border_radius=5)
 
-                    elif letter in correct_letters:
-                        pygame.draw.rect(screen, YELLOW, rect, border_radius=5)
-                        
-                        
+                elif letter in correct_letters:
+                    pygame.draw.rect(screen, YELLOW, rect, border_radius=5)
                     
-                    else:
-                        pygame.draw.rect(screen, DARKGRAY, rect, border_radius=5)
-                        
+                    
+                
                 else:
-                    pygame.draw.rect(screen, GRAY, rect, border_radius=5)
+                    pygame.draw.rect(screen, DARKGRAY, rect, border_radius=5)
                     
-                font = pygame.font.Font(None, 36)
-                text = font.render(letter, True, (0, 0, 0))
-                text_rect = text.get_rect(center=rect.center)
-                screen.blit(text, text_rect)
+            else:
+                pygame.draw.rect(screen, GRAY, rect, border_radius=5)
+                
+            font = pygame.font.Font(None, 36)
+            text = font.render(letter, True, (0, 0, 0))
+            text_rect = text.get_rect(center=rect.center)
+            screen.blit(text, text_rect)
 
     else:
         for i, word in enumerate(guessed_words):
@@ -331,9 +332,149 @@ def single():
     pygame.quit()
     sys.exit()
 
-def waiting():
-    pygame.display.set_caption("Waiting for another player")
+def multiplayer(client):
+    current_row = 0
+    # Screen setups
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Multiplayer Wordle")
+
+    clock = pygame.time.Clock()
+    running = True
+
+    # Initialize variables for keyboard and guessed words
+    start_x = 100
+    start_y = 400
+    waiting_for_enter = False  # Flag to control when to allow writing to the next row
+    guessed_words = []
+    if guessed_words == None:
+        guessed_words = []
+    while len(guessed_words) < 5:
+        guessed_words.append('     ')
+    word = ""
+    draw_word2(guessed_words, 60, 10, screen, current_row)
+    draw_keyboard(screen, start_x)
     pygame.display.flip()
+
+    # Main game loop
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and not waiting_for_enter:
+                mouse_pos = pygame.mouse.get_pos()
+                char = get_clicked_key(mouse_pos, start_x, start_y, key_width, key_height, key_spacing)
+                if char:
+                    
+                    for i in range(current_row, len(guessed_words)):
+                        if " " in guessed_words[i]:
+                            word = list(guessed_words[i])
+                            for s in range(len(word)):
+                                if word[s] == " ":
+                                    word[s] = char
+                                    result = "".join(word)
+                                    guessed_words[i] = result
+                                    draw_word2(guessed_words, 60, 10, screen, current_row, multi=True)
+                                    pygame.display.flip()
+                                    if s == 4:
+                                        waiting_for_enter = True
+
+                                    break
+                            break
+            
+            elif event.type == pygame.KEYDOWN:
+                
+                word = list(guessed_words[current_row])
+                result = "".join(word)
+                result = result.replace(" ", "")
+                s = len(result)
+                
+                if event.key == pygame.K_RETURN and waiting_for_enter:
+                    if s == 5:
+                        waiting_for_enter = False
+                        client.sendall(result.encode('utf-8'))
+                        data = client.recv(1024).decode('utf-8')
+                        response = json.loads(data)
+                        draw_word2(guessed_words, 60, 10, screen, current_row, multi=True, cr_pos = response["correct_positions"], cr_let=response["correct_letters"], paint=True)
+                        current_row += 1
+                            
+                        pygame.display.flip()
+                        if response["playing"] == 0:
+                            time.sleep(1)
+                            waiting(client, game=True)
+                
+                        
+                elif event.key == pygame.K_BACKSPACE:
+                    waiting_for_enter = False
+                    if len(word) > 0:
+                        word[s - 1] = " "
+                        s -= 1
+                        guessed_words[current_row] = word
+                        result = "".join(word)
+                        draw_word2(guessed_words, 60, 10, screen, current_row, multi=True)
+                        pygame.display.flip()
+
+                elif event.unicode.isalpha() and not waiting_for_enter:
+
+                    char = event.unicode.upper()  # Convert to uppercase
+                    for i in range(current_row, len(guessed_words)):
+                        if " " in guessed_words[i]:
+                            word = list(guessed_words[i])
+                            for s in range(len(word)):
+                                if word[s] == " ":
+                                    word[s] = char
+                                    result = "".join(word)
+                                    guessed_words[i] = result
+                                    draw_word2(guessed_words, 60, 10, screen, current_row, multi=True)
+                                    pygame.display.flip()
+                                    if s == 4:
+                                        waiting_for_enter = True
+                                    break
+                            break
+                break
+        #screen.fill(WHITE)
+        clock.tick(FPS)
+
+    # Quit Pygame
+    pygame.quit()
+    sys.exit()
+
+
+def waiting(client, game=False):
+    
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Waiting for another player")
+    screen.fill(WHITE)
+
+    font = pygame.font.Font(None, 36)
+
+    text = font.render("Waiting for other player...", True, BLACK)
+
+    text_rect = text.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
+
+    # Blit the text onto the screen
+    screen.blit(text, text_rect)
+    word = ""
+
+    # Update the display
+    pygame.display.flip()
+    if game:
+        while True:
+            data = client.recv(1024).decode('utf-8')
+            response = json.loads(data)
+            message = response["results"]
+            word = response["goal"]
+
+            if message == "win":
+                return you_won(word, state="WON")
+            elif message == "tie":
+                return you_won(word, state="TIED")
+            else:
+                return you_won(word, state="LOSE")
+    else:
+        while True:
+            message = client.recv(1024).decode('utf-8')
+            if message == "Start":
+                return multiplayer(client)
 
 def ConnectionScreen():
     # Screen setups
@@ -400,30 +541,14 @@ def ConnectionScreen():
     pygame.quit()
     sys.exit()
 
-def you_won(word):
+def you_won(word, state):
     # Screen setup
+    print(word)
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption("You Won!")
     screen.fill(WHITE)  
     font = pygame.font.Font(None, 36)
-    text = font.render(f"YOU WON, THE CORRECT ANSWER WAS {word}", True, (0, 0, 0))
-    text_rect = text.get_rect(center=(400, 300))
-    screen.blit(text, text_rect)
-    pygame.display.flip()
-    
-    
-    time.sleep(5)
-    
-    
-    start()
-
-def you_lost(word):
-    
-    screen = pygame.display.set_mode((800, 600))
-    pygame.display.set_caption("You Lost!")
-    screen.fill(WHITE) 
-    font = pygame.font.Font(None, 36)
-    text = font.render(f"YOU LOST, THE CORRECT ANSWER WAS {word}", True, (0, 0, 0))
+    text = font.render(f"YOU {state}, THE CORRECT ANSWER WAS {word}", True, (0, 0, 0))
     text_rect = text.get_rect(center=(400, 300))
     screen.blit(text, text_rect)
     pygame.display.flip()
@@ -443,7 +568,8 @@ def start_client(host, port):
         start()
 
     response = client.recv(1024).decode('utf-8')
-    print(response)
+    waiting(client)
+    
     
    
 

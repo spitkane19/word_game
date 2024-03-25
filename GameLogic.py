@@ -18,8 +18,11 @@ listofwords = [
 
 
 class Game:
-    def __init__(self):
-        self.correct_word = random.choice(listofwords)
+    def __init__(self, **kwargs):
+        if 'word' in kwargs:
+            self.correct_word = kwargs['word']
+        else:
+            self.correct_word = random.choice(listofwords)
         self.guess_word = [''] * len(self.correct_word)
         print(self.correct_word)
 
